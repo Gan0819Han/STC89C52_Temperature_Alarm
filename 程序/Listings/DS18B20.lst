@@ -1,0 +1,57 @@
+C51 COMPILER V9.54   DS18B20                                                               05/30/2025 15:25:04 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE DS18B20
+OBJECT MODULE PLACED IN .\Objects\DS18B20.obj
+COMPILER INVOKED BY: E:\Keil5\C51\BIN\C51.EXE DS18B20.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\DS1
+                    -8B20.lst) TABS(2) OBJECT(.\Objects\DS18B20.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "OneWire.h"
+   3          #include "LCD1602.h"
+   4          
+   5          
+   6          #define DS18B20_SKIP_ROM 0xCC
+   7          #define DS18B20_CONVERT_T 0x44
+   8          #define DS18B20_READ_SCRATCHPAD 0xBE
+   9          
+  10          void DS18B20_ConvertT(void)
+  11          {
+  12   1        OneWire_Init();
+  13   1        OneWire_SentByte(DS18B20_SKIP_ROM);
+  14   1        OneWire_SentByte(DS18B20_CONVERT_T);  
+  15   1      }
+  16          
+  17          float DS18B20_ReadT(void)
+  18          {
+  19   1        unsigned char TLSB,TMSB;
+  20   1        int Temp;
+  21   1        float T;
+  22   1        
+  23   1        OneWire_Init();
+  24   1        OneWire_SentByte(DS18B20_SKIP_ROM);
+  25   1        OneWire_SentByte(DS18B20_READ_SCRATCHPAD);  
+  26   1        TLSB = OneWire_ReceiveByte();
+  27   1        TMSB = OneWire_ReceiveByte();
+  28   1        //LCD_ShowBinNum(1,1,TMSB,8);
+  29   1        //LCD_ShowBinNum(1,9,TLSB,8);
+  30   1        Temp = (TMSB<<8)|TLSB;
+  31   1        T = Temp / 16.0;
+  32   1        return T;
+  33   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     57    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,141 @@
+C51 COMPILER V9.54   MAIN                                                                  05/30/2025 15:52:34 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: E:\Keil5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main.l
+                    -st) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "AT24C02.h"
+   3          #include "DS18B20.h"
+   4          #include "Delay.h"
+   5          #include "LCD1602.h"
+   6          #include "Key.h"
+   7          #include "Timer0.h"
+   8          
+   9          
+  10          float T,TShow;
+  11          char TLow,THigh;
+  12          unsigned char KeyNum;
+  13          
+  14          void main()
+  15          {
+  16   1        THigh = AT24C02_ReadByte(0);
+  17   1        TLow = AT24C02_ReadByte(1);
+  18   1        if(THigh > 125 || TLow<-55 ||THigh <= TLow)
+  19   1        {
+  20   2          THigh = 33;
+  21   2          TLow = 7;
+  22   2        }
+  23   1        
+  24   1        
+  25   1        LCD_Init();
+  26   1        DS18B20_ConvertT();
+  27   1        Delay(1000);
+  28   1        LCD_ShowString(1,1,"T:");
+  29   1        LCD_ShowString(2,1,"TH:");
+  30   1        LCD_ShowString(2,9,"TL:");
+  31   1        LCD_ShowSignedNum(2,4,THigh,3);
+  32   1        LCD_ShowSignedNum(2,12,TLow,3);
+  33   1        Timer0_Init();
+  34   1        
+  35   1        
+  36   1        while(1)
+  37   1        {
+  38   2          KeyNum = Key();
+  39   2          /*温度读取与显示*/
+  40   2          DS18B20_ConvertT();
+  41   2          T = DS18B20_ReadT();
+  42   2          if(T<0)
+  43   2          {
+  44   3            LCD_ShowChar(1,3,'-');
+  45   3            TShow = -T;
+  46   3          }
+  47   2          else
+  48   2          {
+  49   3            LCD_ShowChar(1,3,'+');
+  50   3            TShow = T;
+  51   3          }
+  52   2          LCD_ShowNum(1,4,TShow,3);
+  53   2          LCD_ShowChar(1,7,'.');
+  54   2          LCD_ShowNum(1,8,(unsigned long)(TShow*100)%100,2);
+C51 COMPILER V9.54   MAIN                                                                  05/30/2025 15:52:34 PAGE 2   
+
+  55   2          
+  56   2          /*阈值判断与显示*/
+  57   2          if(KeyNum)
+  58   2          {
+  59   3              if (KeyNum==1)
+  60   3              {
+  61   4                  THigh++;
+  62   4                  if(THigh>125){THigh=125;}
+  63   4              }
+  64   3              if (KeyNum==2)
+  65   3              {
+  66   4                  THigh--;
+  67   4                  if(THigh<=TLow){THigh++;}
+  68   4              }
+  69   3              if (KeyNum==3)
+  70   3              {
+  71   4                  TLow++;
+  72   4                  if(TLow>=THigh){TLow--;}
+  73   4              }
+  74   3              if (KeyNum==4)
+  75   3              {
+  76   4                  TLow--;
+  77   4                  if(TLow<-55){TLow=-55;}
+  78   4              }
+  79   3              LCD_ShowSignedNum(2,4,THigh,3);
+  80   3              LCD_ShowSignedNum(2,12,TLow,3);
+  81   3              
+  82   3              AT24C02_WriteByte(0,THigh);
+  83   3              Delay(5);
+  84   3              AT24C02_WriteByte(0,TLow);
+  85   3              Delay(5);
+  86   3          }
+  87   2          if(T>THigh)
+  88   2          {
+  89   3            LCD_ShowString(1,13,"OV:H");
+  90   3          }
+  91   2          else if(T<TLow)
+  92   2          {
+  93   3            LCD_ShowString(1,13,"OV:L");
+  94   3          }
+  95   2          else
+  96   2          {
+  97   3            LCD_ShowString(1,13,"Safe");
+  98   3          }
+  99   2        }
+ 100   1      }
+ 101          
+ 102          void Timer0_Routine() interrupt 1
+ 103          {
+ 104   1        static unsigned int T0Count;
+ 105   1        TL0 = 0x18;   
+ 106   1        TH0 = 0xFC;   
+ 107   1        T0Count++;
+ 108   1        if(T0Count>=20)
+ 109   1        {
+ 110   2          T0Count=0;
+ 111   2          Key_Loop();
+ 112   2        }
+ 113   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.54   MAIN                                                                  05/30/2025 15:52:34 PAGE 3   
+
+   CODE SIZE        =    629    ----
+   CONSTANT SIZE    =     26    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     13    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
